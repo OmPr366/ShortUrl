@@ -1,13 +1,36 @@
 import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
 import { connect } from "./connection.js";
 import urlRoute from "./routes/url.js";
-import dotenv from "dotenv";
 
 const app = express();
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
+
+// Middlewares
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://shorturl--frontend.vercel.app",
+];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin
+      // (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not " +
+          "allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+  })
+);
 
 // Connecting to MongoDB
 connect(process.env.MONGO_URL);

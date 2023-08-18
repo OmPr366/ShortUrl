@@ -1,22 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const HomePage = () => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [history, setHistory] = useState([
-    {
-      originalUrl: "https://www.google.com",
-      shortenedUrl: "https://short.url/abc123",
-    },
-    {
-      originalUrl: "https://www.facebook.com",
-      shortenedUrl: "https://short.url/def456",
-    },
-    {
-      originalUrl: "https://www.twitter.com",
-      shortenedUrl: "https://short.url/ghi789",
-    },
-  ]);
+  const [history, setHistory] = useState([]);
 
   const handleShorten = async (e) => {
     e.preventDefault();
@@ -24,31 +11,36 @@ const HomePage = () => {
     // Implement URL shortening logic here and update the history state
     // For demonstration purposes, let's assume the shortened URL is generated
     // and added to the history array.
-    const url = "https://short-url-u3cm.onrender.com/url";
+    const API_URL = "https://short-url-u3cm.onrender.com/url";
     try {
-      const response = await fetch(url, {
+      const response = await fetch(API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          accept: "application/json",
         },
-        body: {
-          url: url,
-        },
+        body: JSON.stringify({ url }),
       });
+
+      const data = await response.json();
+      localStorage.setItem(
+        "history",
+        JSON.stringify([
+          { originalUrl: url, shortenedUrl: data.shortId },
+          ...history,
+        ])
+      );
+      setHistory([
+        { originalUrl: url, shortenedUrl: data.shortId },
+        ...history,
+      ]);
+      setUrl("");
+      setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.log("Error while shortening url ", error);
       return;
     }
-
-    const data = await response.json();
-    console.log(data);
-    setHistory([{ originalUrl: url, shortenedUrl: data.shortId }, ...history]);
-    setUrl("");
-    setIsLoading(false);
-
-    // Set this History in local storage
-    localStorage.setItem("history", JSON.stringify(history));
   };
 
   const handleCopy = (text) => {
@@ -56,6 +48,13 @@ const HomePage = () => {
     // For demonstration purposes, let's log the copied text.
     console.log(`Copied: ${text}`);
   };
+
+  useEffect(() => {
+    const history = localStorage.getItem("history");
+    if (history) {
+      setHistory(JSON.parse(history));
+    }
+  }, []);
 
   return (
     <div className="container mx-auto p-8">
