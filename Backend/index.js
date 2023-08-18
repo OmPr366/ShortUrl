@@ -4,10 +4,8 @@ import urlRoute from "./routes/url.js";
 import dotenv from "dotenv";
 
 const app = express();
-// const PORT = 8003;
 
 if (process.env.NODE_ENV !== "production") {
-  //   require("dotenv").config();
   dotenv.config();
 }
 
@@ -19,6 +17,6 @@ app.use(express.json());
 app.use("/", urlRoute);
 
 // Starting the server
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 8001, () => {
   console.log(`Server is running on ${process.env.PORT}`);
 });
